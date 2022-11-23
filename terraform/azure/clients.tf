@@ -1,0 +1,94 @@
+locals {
+  client_user_data = base64encode(templatefile("${path.module}/../scripts/client_userdata.sh", {
+    environment         = var.environment
+    ssh_public_key      = tls_private_key.ssh-key.public_key_openssh
+    ssh_private_key     = tls_private_key.ssh-key.private_key_openssh
+    p4benchmark_os_user = var.p4benchmark_os_user
+
+    helix_core_commit_benchmark_username = var.helix_core_commit_benchmark_username
+    helix_core_password                  = "perforce"  # TODO: local.helix_core_commit_password
+    helix_core_private_ip                = "127.0.0.1" # TODO: local.helix_core_private_ip
+
+    git_project = var.p4benchmark_github_project
+    git_branch  = var.p4benchmark_github_branch
+    git_owner   = var.p4benchmark_github_project_owner
+
+    p4benchmark_dir      = var.p4benchmark_dir
+    locust_workspace_dir = var.locust_workspace_dir
+  }))
+}
+
+resource "azurerm_linux_virtual_machine" "locustclients" {
+  count               = var.client_vm_count
+  name                = format("p4-benchmark-locust-client-%03d", count.index + 1)
+  resource_group_name = azurerm_resource_group.p4benchmark.name
+  location            = azurerm_resource_group.p4benchmark.location
+  size                = "Standard_DS1_v2"
+  admin_username      = "adminuser"
+  network_interface_ids = [
+    azurerm_network_interface.clients_network_interface[count.index].id,
+  ]
+  user_data                  = local.client_user_data
+  encryption_at_host_enabled = true
+
+  admin_ssh_key {
+    username   = "adminuser"
+    public_key = file("~/.ssh/id_rsa.pub")
+  }
+
+  os_disk {
+    # Azure by default deletes this disk on deletion (https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/guides/features-block#delete_os_disk_on_deletion)
+    caching              = "ReadWrite"
+    storage_account_type = var.client_root_volume_type
+    disk_size_gb         = var.client_root_volume_size
+  }
+
+  source_image_reference {
+    publisher = "perforce"
+    offer     = "rockylinux8"
+    sku       = "8-gen2"
+    version   = "8.6.2022060701"
+  }
+
+  plan {
+    name      = "8-gen2"
+    publisher = "perforce"
+    product   = "rockylinux8"
+  }
+
+  tags = {
+    Environment = var.environment
+    Owner       = var.owner
+    Product     = "Perforce P4 Benchmark"
+    Terraform   = "true"
+  }
+}
+
+resource "azurerm_public_ip" "clients_public_ip" {
+  count               = var.client_vm_count
+  name                = format("p4-benchmark-locust-client-publicip-%03d", count.index + 1)
+  location            = azurerm_resource_group.p4benchmark.location
+  resource_group_name = azurerm_resource_group.p4benchmark.name
+  allocation_method   = "Dynamic"
+}
+
+resource "azurerm_network_interface" "clients_network_interface" {
+  count               = var.client_vm_count
+  name                = format("p4-benchmark-locust-client-interface-%03d", count.index + 1)
+  location            = azurerm_resource_group.p4benchmark.location
+  resource_group_name = azurerm_resource_group.p4benchmark.name
+
+  ip_configuration {
+    name                          = "internal"
+    subnet_id                     = azurerm_subnet.vm_p4_subnet.id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = azurerm_public_ip.clients_public_ip[count.index].id
+  }
+
+  tags = {
+    Environment = var.environment
+    Owner       = var.owner
+    Product     = "Perforce P4 Benchmark"
+    Terraform   = "true"
+  }
+}

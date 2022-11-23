@@ -1,6 +1,6 @@
 # Create a resource group
 resource "azurerm_resource_group" "p4benchmark" {
-  name     = "p4benchmark-resources"
+  name     = "p4benchmark-resources-clientsbranch"
   location = var.azure_region
   tags = {
     Environment = var.environment
