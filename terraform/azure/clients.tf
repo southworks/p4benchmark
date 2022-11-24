@@ -1,4 +1,9 @@
+
 locals {
+
+  # clients_sg_ids   = ... # TODO: support NSGs and existing Helix Core deployment
+  client_subnet_id = azurerm_subnet.vm_p4_subnet.id # TODO: support existing Helix Core deployment
+
   client_user_data = base64encode(templatefile("${path.module}/../scripts/client_userdata.sh", {
     environment         = var.environment
     ssh_public_key      = tls_private_key.ssh-key.public_key_openssh
@@ -15,16 +20,20 @@ locals {
 
     p4benchmark_dir      = var.p4benchmark_dir
     locust_workspace_dir = var.locust_workspace_dir
+
   }))
 }
 
 resource "azurerm_linux_virtual_machine" "locustclients" {
-  count               = var.client_vm_count
+  count      = var.client_vm_count
+  # TODO: enable the following to wait for Helix Core deployment
+  # depends_on = [null_resource.helix_core_cloud_init_status]
+
   name                = format("p4-benchmark-locust-client-%03d", count.index + 1)
   resource_group_name = azurerm_resource_group.p4benchmark.name
   location            = azurerm_resource_group.p4benchmark.location
-  size                = "Standard_DS1_v2"
-  admin_username      = "adminuser"
+  size                = var.client_instance_type
+  admin_username      = "rocky"
   network_interface_ids = [
     azurerm_network_interface.clients_network_interface[count.index].id,
   ]
@@ -32,8 +41,8 @@ resource "azurerm_linux_virtual_machine" "locustclients" {
   encryption_at_host_enabled = true
 
   admin_ssh_key {
-    username   = "adminuser"
-    public_key = file("~/.ssh/id_rsa.pub")
+    username   = "rocky"
+    public_key = file("~/.ssh/id_rsa.pub") # TODO: grab key from Key Vault
   }
 
   os_disk {
@@ -56,7 +65,7 @@ resource "azurerm_linux_virtual_machine" "locustclients" {
     product   = "rockylinux8"
   }
 
-  tags = {
+  tags = { # TODO: simplify all resources with single tags map object
     Environment = var.environment
     Owner       = var.owner
     Product     = "Perforce P4 Benchmark"
@@ -70,6 +79,13 @@ resource "azurerm_public_ip" "clients_public_ip" {
   location            = azurerm_resource_group.p4benchmark.location
   resource_group_name = azurerm_resource_group.p4benchmark.name
   allocation_method   = "Dynamic"
+
+  tags = { # TODO: simplify all resources with single tags map object
+    Environment = var.environment
+    Owner       = var.owner
+    Product     = "Perforce P4 Benchmark"
+    Terraform   = "true"
+  }
 }
 
 resource "azurerm_network_interface" "clients_network_interface" {
@@ -80,15 +96,34 @@ resource "azurerm_network_interface" "clients_network_interface" {
 
   ip_configuration {
     name                          = "internal"
-    subnet_id                     = azurerm_subnet.vm_p4_subnet.id
+    subnet_id                     = local.client_subnet_id
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.clients_public_ip[count.index].id
   }
 
-  tags = {
+  tags = { # TODO: simplify all resources with single tags map object
     Environment = var.environment
     Owner       = var.owner
     Product     = "Perforce P4 Benchmark"
     Terraform   = "true"
   }
+}
+
+# Wait for client cloud-init status to complete.  
+# This will cause terraform to not create the driver instance until client is finished
+resource "null_resource" "client_cloud_init_status" {
+  # TODO: enable the following lines to test whether Client 0 deployment is complete
+  # Will be used by driver.tf
+
+  # connection {
+  #   type = "ssh"
+  #   user = "rocky"
+  #   host = azurerm_linux_virtual_machine.locustclients.0.public_ip_address
+  # }
+
+  # provisioner "remote-exec" {
+  #   scripts = [
+  #     "${path.module}/../scripts/cloud_init_status.sh"
+  #   ]
+  # }
 }

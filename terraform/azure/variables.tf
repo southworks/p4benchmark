@@ -74,3 +74,9 @@ variable "client_vm_count" {
   type        = number
   default     = 1
 }
+
+variable "client_instance_type" {
+  description = "The type of instance to for Locust clients"
+  type        = string
+  default     = "Standard_DS1_v2"
+}
