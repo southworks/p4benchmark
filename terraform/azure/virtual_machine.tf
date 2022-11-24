@@ -26,10 +26,5 @@ resource "azurerm_linux_virtual_machine" "p4_virtual_machine" {
     publisher = "perforce"
     product = "perforce-helix-core-offer"
   }
-  tags = {
-    Environment = var.environment
-    Owner       = var.owner
-    Product     = "Perforce P4 Benchmark"
-    Terraform   = "true"
-  }
+  tags = local.tags
 }
