@@ -128,7 +128,8 @@ resource "azurerm_network_interface" "vm_p4_network" {
   tags = local.tags
 }
 
-resource "azurerm_network_interface_security_group_association" "example" {
-  network_interface_id      = azurerm_network_interface.vm_p4_network.id
-  network_security_group_id = azurerm_network_security_group.p4_helix_core_sg.id
-}
+# TODO: re-enable after testing
+# resource "azurerm_network_interface_security_group_association" "example" {
+#   network_interface_id      = azurerm_network_interface.vm_p4_network.id
+#   network_security_group_id = azurerm_network_security_group.p4_helix_core_sg.id
+# }
