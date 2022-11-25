@@ -9,6 +9,16 @@ variable "owner" {
   type        = string
 }
 
+variable "helix_core_admin_user" {
+  description = "Admin user name for for the Virtual Machine with Helix-Core."
+  type        = string
+}
+
+variable "helix_core_admin_password" {
+  description = "Admin user password for for the Virtual Machine with Helix-Core."
+  type        = string
+}
+
 variable "azure_region" {
   description = "Azure region P4 benchmark infrastructure will be deployed into."
   type        = string
@@ -31,12 +41,6 @@ variable "p4benchmark_github_branch" {
   description = "GitHub project branch name"
   type        = string
   default     = "main"
-}
-
-variable "p4benchmark_os_user" {
-  description = "What user Ansible should use for authenticating to all hosts"
-  type        = string
-  default     = "perforce"
 }
 
 variable "p4benchmark_dir" {
@@ -124,4 +128,23 @@ variable "createfile_configs" {
       createfile_directory = "ws1"   # Directory under /tmp/ to create and use for the p4 workspace
     }
   ]
+}
+
+
+variable "p4benchmark_os_user" {
+  description = "What user Ansible should use for authenticating to all hosts"
+  type        = string
+  default     = "perforce"
+}
+
+variable "license_filename" {
+  description = "Name of the license file in S3"
+  type        = string
+  default     = ""
+}
+
+variable "s3_checkpoint_bucket" {
+  description = "Name of the S3 bucket that contains checkpoints"
+  type        = string
+  default     = ""
 }

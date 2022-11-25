@@ -6,9 +6,9 @@ locals {
 
   helix_core_commit_username = var.helix_core_commit_username
   # TODO: support exsiting Helix deployments and connection to commit server
-  helix_core_commit_password = azurerm_linux_virtual_machine.p4_virtual_machine.id
-  helix_core_private_ip      = azurerm_linux_virtual_machine.p4_virtual_machine.private_ip_address
-  helix_core_public_ip       = azurerm_linux_virtual_machine.p4_virtual_machine.public_ip_address
+  helix_core_commit_password = azurerm_linux_virtual_machine.helix_core.id
+  helix_core_private_ip      = azurerm_linux_virtual_machine.helix_core.private_ip_address
+  helix_core_public_ip       = azurerm_linux_virtual_machine.helix_core.public_ip_address
 
   driver_user_data = base64encode(templatefile("${path.module}/../scripts/driver_userdata.sh", {
     environment                          = var.environment
@@ -45,7 +45,8 @@ resource "azurerm_linux_virtual_machine" "driver" {
   name = "p4-benchmark-driver"
   # TODO: use cloud init status
   # depends_on = [null_resource.helix_core_cloud_init_status, null_resource.client_cloud_init_status]
-  depends_on                 = [azurerm_linux_virtual_machine.p4_virtual_machine]
+  depends_on = [null_resource.helix_core_cloud_init_status]
+  # depends_on                 = [azurerm_linux_virtual_machine.helix_core] < just testing
   resource_group_name        = azurerm_resource_group.p4benchmark.name
   location                   = azurerm_resource_group.p4benchmark.location
   size                       = var.driver_instance_type
@@ -171,8 +172,8 @@ resource "null_resource" "run_create_files" {
 
 resource "null_resource" "apply_p4d_configurables" {
   # TODO:
-  # depends_on = [null_resource.helix_core_cloud_init_status]
-  depends_on = [null_resource.driver_cloud_init_status]
+  depends_on = [null_resource.helix_core_cloud_init_status]
+  # depends_on = [null_resource.driver_cloud_init_status] < just testing
 
   connection {
     type        = "ssh"
