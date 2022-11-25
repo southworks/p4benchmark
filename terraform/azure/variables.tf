@@ -9,15 +9,15 @@ variable "owner" {
   type        = string
 }
 
-variable "helix_core_admin_user" {
-  description = "Admin user name for for the Virtual Machine with Helix-Core."
-  type        = string
-}
+# variable "helix_core_admin_user" {
+#   description = "Admin user name for for the Virtual Machine with Helix-Core."
+#   type        = string
+# }
 
-variable "helix_core_admin_password" {
-  description = "Admin user password for for the Virtual Machine with Helix-Core."
-  type        = string
-}
+# variable "helix_core_admin_password" {
+#   description = "Admin user password for for the Virtual Machine with Helix-Core."
+#   type        = string
+# }
 
 variable "azure_region" {
   description = "Azure region P4 benchmark infrastructure will be deployed into."

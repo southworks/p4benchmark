@@ -17,13 +17,16 @@ resource "azurerm_linux_virtual_machine" "helix_core" {
   location            = azurerm_resource_group.p4benchmark.location
   size                = "Standard_DS1_v2"
   admin_username      = "rocky"
+  user_data           = local.user_data
   network_interface_ids = [
     azurerm_network_interface.vm_p4_network.id,
   ]
+
   admin_ssh_key {
     username   = "rocky"
     public_key = file("~/.ssh/id_rsa.pub")
   }
+
   os_disk {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
@@ -53,7 +56,6 @@ resource "null_resource" "helix_core_cloud_init_status" {
     user        = "rocky"
     host        = azurerm_linux_virtual_machine.helix_core.public_ip_address
     private_key = file("~/.ssh/id_rsa")
-
   }
 
   provisioner "remote-exec" {
@@ -73,6 +75,9 @@ resource "azurerm_managed_disk" "depot" {
 }
 
 resource "azurerm_virtual_machine_data_disk_attachment" "helix_core_depot_disk" {
+  depends_on = [
+    azurerm_virtual_machine_data_disk_attachment.helix_core_log_disk, azurerm_virtual_machine_data_disk_attachment.helix_core_metadata_disk
+  ]
   managed_disk_id    = azurerm_managed_disk.depot.id
   virtual_machine_id = azurerm_linux_virtual_machine.helix_core.id
   lun                = "0"

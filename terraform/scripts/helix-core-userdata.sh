@@ -31,9 +31,9 @@ export AWS_REGION=$(curl --silent http://169.254.169.254/latest/dynamic/instance
 
 export P4D_AUTH_ID="commit"
 
-export DEPOT_DEVICE="/dev/sdf"
-export LOG_DEVICE="/dev/sdg"
-export METADATA_DEVICE="/dev/sdh"
+export DEPOT_DEVICE="/dev/sde"
+export LOG_DEVICE="/dev/sdc"
+export METADATA_DEVICE="/dev/sdd"
 
 
 run-parts /home/perforce/.userdata/custom-pre/
