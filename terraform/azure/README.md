@@ -14,7 +14,14 @@ az login
 az account show
 ```
 
-2. Create a resource group to hold your public key:
+2. *Once per subscription*, you'll have to enable EncryptionAtHost for the VMs and accept the Terms & Conditions for the Perforce image:
+```bash
+az feature register --namespace Microsoft.Compute --name EncryptionAtHost
+
+az vm image terms accept --urn perforce:rockylinux8:8-gen2:8.6.2022060701
+```
+
+1. Create a resource group to hold your public key:
 ```bash
 export key_name="fgiordano"
 export key_resource_group_name="fgiordano-keys"
