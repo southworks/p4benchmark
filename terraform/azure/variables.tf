@@ -20,37 +20,31 @@ variable "azure_region" {
 variable "helix_core_ssh_allowed_ip" {
   description = "Ip whitelist for SSH Helix Core access"
   type        = string
-  default     = "200.80.77.193"
 }
 
 variable "helix_core_https_allowed_ip" {
   description = "Ip whitelist for SSH Helix Core access"
   type        = string
-  default     = "200.80.77.193"
 }
 
 variable "helix_core_1666_allowed_ip" {
   description = "Ip whitelist for SSH Helix Core access"
   type        = string
-  default     = "200.80.77.193"
 }
 
 variable "helix_core_hansoft_allowed_ip" {
   description = "Ip whitelist for SSH Helix Core access"
   type        = string
-  default     = "200.80.77.193"
 }
 
 variable "helix_core_http_allowed_ip" {
   description = "Ip whitelist for SSH Helix Core access"
   type        = string
-  default     = "200.80.77.193"
 }
 
 variable "helix_core_swarm_allowed_ip" {
   description = "Ip whitelist for SSH Helix Core access"
   type        = string
-  default     = "200.80.77.193"
 }
 # Helix Core VM Variables
 variable "helix_core_admin_user" {
