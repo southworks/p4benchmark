@@ -62,7 +62,7 @@ variable "helix_core_admin_user" {
 variable "helix_core_instance_type" {
   description = "The type of instance for Helix-Core VM"
   type        = string
-  default     = "Standard_DS1_v2"
+  default     = "Standard_D2_v4"
 }
 
 variable "helix_core_root_volume_type" {
@@ -186,7 +186,7 @@ variable "client_vm_count" {
 variable "client_instance_type" {
   description = "The type of instance to for Locust clients"
   type        = string
-  default     = "Standard_DS1_v2"
+  default     = "Standard_D2_v4"
 }
 
 # Driver Client VM variables
@@ -229,7 +229,7 @@ variable "locust_repeat" {
 variable "driver_instance_type" {
   description = "The type of instance to for driver"
   type        = string
-  default     = "Standard_DS1_v2"
+  default     = "Standard_D2_v4"
 }
 
 variable "driver_root_volume_size" {
