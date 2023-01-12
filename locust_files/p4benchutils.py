@@ -11,6 +11,7 @@ import pprint
 import random
 import platform
 import errno
+import uuid
 
 from createfiles import create_file, generator
 from locust import events
@@ -222,6 +223,65 @@ class P4Benchmark(object):
             self.p4.save_submit(chg)
             with self.p4.at_exception_level(P4.P4.RAISE_ERRORS):
                 self.p4.run_revert("//...")
+
+    def readOnly(self):
+        """Just perform some syncs"""
+
+        # TODO: can I call createWorksapce and overwrite the workspace_name in self?
+
+        self.workspace_name = "{}.{}.{}.{}".format(self.p4.user, str(uuid.uuid4()), self.id, platform.node())
+
+
+        # workspace scope comes from the ansible hosts.yaml file repoDirNum
+        # on the client machine the root dir includes self.id so each locust
+        # client will have its own dir.  There is no point in doing multiple syncs in a loop
+
+        self.createWorkspace()
+        self.p4.run_sync("//...")
+
+
+        return 1
+
+    def writeOnly(self):
+        """Only add files and submit them without any randomness"""
+
+        try:
+            self.p4.run_sync("//...")
+        except:
+            pass
+        try:
+            self.localfilelist = [f["path"] for f in self.p4.run_have()]
+        except:
+            pass
+
+        # within a single locust client we will be adding the same files via a pre created
+        # changeset.  To avoid collisions with itself or other clients namespace the depot directory
+        # with a uuid
+        
+        # iteration_dir_name = "foo"
+
+        # TODO: remove the random and have it select from a pre existing changeset
+        for i in range(10):
+
+            iteration_dir_name = str(uuid.uuid4())
+
+            action = random.choice(["add"])
+            filename = random.choice(self.localfilelist)
+            if action == "add":
+                if not os.path.isdir(os.path.join(os.path.dirname(filename), iteration_dir_name)):
+                    print('The directory is not present. Creating a new one..')
+                    os.mkdir(os.path.join(os.path.dirname(filename), iteration_dir_name))
+                addfilename = os.path.join(os.path.dirname(filename), iteration_dir_name, generator(20, eol=""))
+                create_file(random.randint(100, 1000000), addfilename, random.choice([True, False]))
+
+                # TODO: if we are copying in a folder with files can we do an add at the top level?
+                # does the add need a recursive flag?
+                self.addFile(addfilename)
+
+        self.commit()
+        # TODO: I have removed the randomness.  the number of action in this function is always 1
+        # to repeate this action multiple times create the repeat in locust
+        return 40
 
     def basicFileActions(self):
         """Randomly edit/delete/add files in workspace"""

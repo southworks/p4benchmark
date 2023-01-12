@@ -5,7 +5,7 @@ MAINTAINER Robert Cowham "rcowham@perforce.com"
 # basis for master machine.
 
 RUN yum update -y; \
-    yum install -y net-tools; \
+    yum install -y net-tools iproute; \
     yum install -y perl; \
     yum install -y sudo; \
     yum install -y wget; \
@@ -106,10 +106,8 @@ FROM p4bench as p4benchdriver
 
 USER root
 
-RUN dnf install --assumeyes epel-release; \
-    dnf install --assumeyes ansible; \
-    dnf install --assumeyes cronie; \
-    dnf install --assumeyes sqlite nc
+RUN dnf install --assumeyes epel-release
+RUN dnf install --assumeyes ansible cronie sqlite nc
 
 # Log analyzer required
 RUN mkdir /home/perforce/bin; \
