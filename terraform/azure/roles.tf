@@ -10,3 +10,16 @@ resource "azurerm_role_assignment" "storage_read_role" {
   role_definition_name = "Storage Blob Data Reader"
   principal_id         = azurerm_linux_virtual_machine.helix_core[0].identity[0].principal_id
 }
+
+data "azurerm_kubernetes_cluster" "perforce_cluster" {
+  count               = var.existing_aks_cluster_name != "" ? 1 : 0
+  name                = var.existing_aks_cluster_name
+  resource_group_name = var.existing_aks_cluster_resource_group
+}
+
+resource "azurerm_role_assignment" "aks_role" {
+  count                = var.existing_aks_cluster_name != "" ? 1 : 0
+  scope                = data.azurerm_kubernetes_cluster.perforce_cluster[0].id
+  role_definition_name = "Azure Kubernetes Service Cluster User Role"
+  principal_id         = azurerm_linux_virtual_machine.driver.identity[0].principal_id
+}
