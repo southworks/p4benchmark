@@ -20,7 +20,7 @@ all:
     # The port to use
     p4port: 1666
     # Number of workers per bench_client
-    num_workers: 12
+    num_workers: 2
 
     # This section is mainly for the locust scripts more than the yaml files
     general:
@@ -44,9 +44,9 @@ all:
         #   If it includes "*" will be used as base for selection after running "p4 dirs" on it
         repoPath:   //depot/*
         # repoDirNum: (numeric) Number of entries to randomly select from the above "p4 dirs" output if relevant
-        repoDirNum: 2
+        repoDirNum: 5
         # How many times to repeat the loop
-        repeat: 5
+        repeat: 15
         # sync_args: any extra sync arguments. This will result in the spawning of a "p4" command
         # Example to avoid actually writing files to filesystem on client side:
         #sync_args: -vfilesys.client.nullsync=1

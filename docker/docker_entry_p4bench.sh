@@ -43,7 +43,7 @@ EOF
 
 mkdir run logs
 echo "Starting benchmark (including initialisation)"
-./utils/run_bench.sh 1 basic 
+./utils/run_bench.sh 1 static 
 echo "Waiting for benchmark to complete"
 sleep 10
 ./utils/wait_end_bench.sh

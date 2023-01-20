@@ -34,7 +34,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
-      target: p4bench
+      target: p4benchclient
     hostname: client1
     command: /usr/sbin/sshd -D
     networks:
@@ -47,7 +47,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
-      target: p4bench
+      target: p4benchclient
     hostname: client2
     command: /usr/sbin/sshd -D
     networks:
