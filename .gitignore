@@ -64,3 +64,6 @@ terraform.tfvars
 
 # Ignore private keys
 *.pem
+
+# Ignore local changesets
+/changeset

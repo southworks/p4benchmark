@@ -11,6 +11,8 @@ import pprint
 import random
 import platform
 import errno
+import uuid
+import shutil
 
 from createfiles import create_file, generator
 from locust import events
@@ -222,6 +224,57 @@ class P4Benchmark(object):
             self.p4.save_submit(chg)
             with self.p4.at_exception_level(P4.P4.RAISE_ERRORS):
                 self.p4.run_revert("//...")
+
+    def readOnly(self):
+        """Just perform some syncs"""
+
+        # TODO: can I call createWorksapce and overwrite the workspace_name in self?
+
+        self.workspace_name = "{}.{}.{}.{}".format(self.p4.user, str(uuid.uuid4()), self.id, platform.node())
+        self.workspace_root = os.path.join(self.test_root, self.workspace_name)
+
+        # workspace scope comes from the ansible hosts.yaml file repoDirNum
+        # on the client machine the root dir includes self.id so each locust
+        # client will have its own dir.  There is no point in doing multiple syncs in a loop
+
+        self.createWorkspace()
+        self.p4.run_sync("//...")
+
+        return 1
+
+    def _getFirstPathInView(self):
+        """Parses the Client view and returns the first top-level folder path as a string. Uses p4.fetch_client and p4.run_where"""
+
+        ws = self.p4.fetch_client(self.workspace_name)
+        # ws._view is first defined in self.getView above. We simply parse this structure below
+        dir_in_view_path = ws._view[0].split()[0]
+        first_local_path = self.p4.run_where(dir_in_view_path)[0]['path']
+        return first_local_path.rstrip('...')
+
+    def writeOnly(self, changeset_src_path):
+        """Only add files and submit them without any randomness. Files to be added are copied from 'changeset_src_path'"""
+
+        try:
+            self.p4.run_sync("//...")
+        except:
+            pass
+
+        depot_path = ''
+        try:
+            depot_path = self._getFirstPathInView()
+        except:
+            pass
+
+        iteration_dir_name = str(uuid.uuid4())
+        changeset_dest = os.path.join(depot_path, iteration_dir_name)
+        self.logger.info("Selected changeset_dest is: %s" % changeset_dest)
+
+        shutil.copytree(changeset_src_path, changeset_dest)
+        self.addFile(os.path.join(changeset_dest, '...'))
+        self.commit()
+        shutil.rmtree(self.workspace_root)
+
+        return 40
 
     def basicFileActions(self):
         """Randomly edit/delete/add files in workspace"""
