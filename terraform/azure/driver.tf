@@ -8,7 +8,7 @@ locals {
   helix_core_private_ip      = var.existing_helix_core ? var.existing_helix_core_ip : azurerm_linux_virtual_machine.helix_core[0].private_ip_address
   helix_core_public_ip       = var.existing_helix_core ? var.existing_helix_core_public_ip : azurerm_linux_virtual_machine.helix_core[0].public_ip_address
 
-  driver_user_data = base64encode(templatefile("${path.module}/../scripts/driver_userdata.sh", {
+  driver_user_data = base64encode(templatefile("${path.module}/../scripts/driver_userdata_azure.sh", {
     environment                          = var.environment
     locust_client_ips                    = azurerm_linux_virtual_machine.locustclients.*.private_ip_address
     ssh_public_key                       = tls_private_key.ssh-key.public_key_openssh
@@ -30,6 +30,10 @@ locals {
     locust_workspace_dir                 = var.locust_workspace_dir
     helix_core_port                      = var.helix_core_port
     avoid_ssh_connection                 = var.driver_avoid_ssh_connection
+    aks_cluster_name                     = var.existing_aks_cluster_name
+    aks_cluster_resource_group           = var.existing_aks_cluster_resource_group
+    container_namespaces                 = var.existing_aks_container_namespaces
+    container_pod_name                   = var.existing_aks_container_pod_name
   }))
 
   create_files_template = templatefile("${path.module}/../scripts/create_files.sh", {
@@ -75,7 +79,9 @@ resource "azurerm_linux_virtual_machine" "driver" {
     publisher = "perforce"
     product   = "rockylinux8"
   }
-
+  identity {
+    type = "SystemAssigned"
+  }
   tags = local.tags
 }
 

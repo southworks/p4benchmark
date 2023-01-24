@@ -173,6 +173,31 @@ variable "existing_helix_core_password" {
   default     = ""
 }
 
+# If helix core is running in an AKS Cluster, the following two variables should be configured
+variable "existing_aks_cluster_name" {
+  description = "Existing aks cluster name"
+  type        = string
+  default     = ""
+}
+
+variable "existing_aks_cluster_resource_group" {
+  description = "Existing resource group where aks cluster belongs to"
+  type        = string
+  default     = ""
+}
+
+variable "existing_aks_container_namespaces" {
+  description = "Namespaces of the pods to connect to"
+  type        = list(string)
+  default     = []
+}
+
+variable "existing_aks_container_pod_name" {
+  description = "Name of the pods"
+  type        = string
+  default     = ""
+}
+
 # Shared Helix Core, Locust Clients And Driver VMs Variables
 
 variable "p4benchmark_os_user" {
